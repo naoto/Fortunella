@@ -7,7 +7,6 @@ class Twitter < Fortunella::Plugin
       
       lasted = Nokogiri::HTML(open("http://twitter.com/naotos")).at(".entry-content")
      
-      p lasted
       if lasted.inner_text != @lasted
         p "IN"
         @lasted = lasted.inner_text
