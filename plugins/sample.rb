@@ -1,8 +1,9 @@
 class Sample < Fortunella::Plugin
     
   def start(args)
-      p args["crawl"]
-      notice "#naobot@freenode", "TEST"
+      args["channels"].each { |c|
+        notice c, "TEST"
+      }
       sleep args["crawl"]
   end
 end
