@@ -15,6 +15,7 @@ require 'lib/plugin'
 
 module Fortunella
 class Core < Net::IRC::Client
+  attr_reader :socket
 
   def initialize
     setup_options
