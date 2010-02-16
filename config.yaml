@@ -1,0 +1,19 @@
+---
+general:
+  host: localhost
+  port: 6666
+  user: hoge
+  nick: hoge
+  real: hoge
+  pass: fuga
+  error: #hogefuga
+  plugin_dir: plugins
+  charset:
+    default: utf-8
+
+plugins:
+  
+  Sample:
+    channels: 
+      - "#naobot@freenode"
+    crawl: 10
