@@ -71,7 +71,6 @@ class Core < Net::IRC::Client
     @socket.gets
     on_plugins
 
-
     while l = @socket.gets
       begin
         @log.debug "RECEIVE: #{l.chomp}"
@@ -96,12 +95,14 @@ class Core < Net::IRC::Client
   def on_plugins
 
     @instance = {}
+    @crawl = {}
     @config.plugins.each { |key,_|
       @instance[key] = @classtable[key][:class].new(self,@config.plugins)
+      @crawl[key] = _["crawl"] || @crawl_time
       Thread.start(key,@instance[key]) do |nm,ins| 
         loop do
-          ins.run(_,@crwal_time)
-          sleep @crawl_time
+          ins.run(_,@crawl[key])
+          sleep @crawl[key]
         end
       end
     }
