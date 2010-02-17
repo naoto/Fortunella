@@ -41,6 +41,7 @@ class Core < Net::IRC::Client
     end
 
     @plugin_dir = @config.general["plugin_dir"]
+    @data_dir = @config.general["data_dir"]
     @logger = Logger.new(@config.general["log"] || $stdout)
     @logger.level = eval("Logger::#{@config.general['log_level'].upcase}") if @config.general['log_level']
     @logger.progname = File.basename($0)
@@ -73,7 +74,7 @@ class Core < Net::IRC::Client
 
     while l = @socket.gets
       begin
-        @log.debug "RECEIVE: #{l.chomp}"
+        #@log.debug "RECEIVE: #{l.chomp}"
         m = Message.parse(l)
         next if on_message(m) === true
         name = "on_#{(COMMANDS[m.command.upcase] || m.command).downcase}"
@@ -96,12 +97,16 @@ class Core < Net::IRC::Client
 
     @instance = {}
     @crawl = {}
+    load_data
+
     @config.plugins.each { |key,_|
       @instance[key] = @classtable[key][:class].new(self,@config.plugins)
       @crawl[key] = _["crawl"] || @crawl_time
+      @data_store[key] = {} if @data_store[key].nil?
       Thread.start(key,@instance[key]) do |nm,ins| 
         loop do
-          ins.run(_,@crawl[key])
+          ins.run(_,@crawl[key],@data_store[key])
+          store
           sleep @crawl[key]
         end
       end
@@ -110,6 +115,21 @@ class Core < Net::IRC::Client
   rescue Exception => e
     warn e
   ensure
+  end
+
+  def load_data
+    if(!File.exists?("#{data}/store.yaml"))
+      @data_store = {}
+      store
+    else
+      @data_store = YAML.load_file("#{@data_dir}/store.yaml")
+    end
+  end
+
+  def store
+    f = File.open("#{@data_dir}/store.yaml",'w+')
+    f.puts @data_store.to_yaml
+    f.close
   end
 
   def log(l)
