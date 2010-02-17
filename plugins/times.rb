@@ -1,7 +1,7 @@
 class Times < Fortunella::Plugin
     
   def run(args,sleep_time,data)
-p data
+
       args["timer"].each { |t|
         
         if t["time"] == Time.now.strftime("%H:%M")

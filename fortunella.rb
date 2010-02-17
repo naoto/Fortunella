@@ -118,7 +118,7 @@ class Core < Net::IRC::Client
   end
 
   def load_data
-    if(!File.exists?("#{data}/store.yaml"))
+    if(!File.exists?("#{@data_dir}/store.yaml"))
       @data_store = {}
       store
     else
