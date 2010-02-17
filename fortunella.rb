@@ -15,6 +15,7 @@ require 'lib/plugin'
 
 module Fortunella
 class Core < Net::IRC::Client
+
   attr_reader :socket
 
   def initialize
@@ -27,7 +28,6 @@ class Core < Net::IRC::Client
       :pass => @config.general["pass"],
       :logger => @logger
     })
-    @info_count = 0
 
     @path = Pathname.new(@plugin_dir)
     @classtable = search(@path)
@@ -47,13 +47,11 @@ class Core < Net::IRC::Client
   end
 
   def setup_options
-    @port   = 6668
     @crawl_time = 60
     @config_file = "config.yaml"
 
     ARGV.options do |o|
       o.on('-c', "--config-file", 'configfileを読み込む') { |v| @config_file = v }
-      o.on('-D', '--daemonize', 'プロセスをデーモン化する') { |v| Daemons.daemonize }
       o.parse!
     end
 
@@ -61,38 +59,56 @@ class Core < Net::IRC::Client
   end
 
   def start
+
     @server_config = Message::ServerConfig.new
-    @socket = TCPSocket.open(@host, @port)
+    @socket = TCPSocket.open(@config.general["host"], @config.general["port"])
     on_connected
+
     post PASS, @opts.pass if @opts.pass
     post NICK, @opts.nick
     post USER, @opts.user, "0", "*", @opts.real
+
     @socket.gets
     on_plugins
+
+
+    while l = @socket.gets
+      begin
+        @log.debug "RECEIVE: #{l.chomp}"
+        m = Message.parse(l)
+        next if on_message(m) === true
+        name = "on_#{(COMMANDS[m.command.upcase] || m.command).downcase}"
+        send(name, m) if respond_to?(name)
+      rescue Exception => e
+        warn e
+        warn e.backtrace.join("\r\t")
+        raise
+      rescue Message::InvalidMessage
+        @log.error "MessageParse: " + l.inspect
+      end
+    end
+
   rescue IOError
   ensure
     finish
   end
 
   def on_plugins
+
     @instance = {}
     @config.plugins.each { |key,_|
       @instance[key] = @classtable[key][:class].new(self,@config.plugins)
       Thread.start(key,@instance[key]) do |nm,ins| 
         loop do
-          ins.start(_)
+          ins.run(_,@crwal_time)
+          sleep @crawl_time
         end
       end
     }
 
-    loop do
-      break if Thread.list.empty?
-    end
-
-  rescue IOError => e
-    @log.error 'IOError' + e.to_s
+  rescue Exception => e
+    warn e
   ensure
-    finish
   end
 
   def log(l)

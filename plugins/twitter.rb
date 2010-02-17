@@ -3,10 +3,11 @@ require 'nokogiri'
 
 class Twitter < Fortunella::Plugin
     
-  def start(args)
+  def run(args,sleep_time)
       
       lasted = Nokogiri::HTML(open("http://twitter.com/naotos")).at(".entry-content")
      
+      p lasted
       if lasted.inner_text != @lasted
         p "IN"
         @lasted = lasted.inner_text
@@ -15,6 +16,5 @@ class Twitter < Fortunella::Plugin
         }
       end
 
-      sleep args["crawl"]
   end
 end
