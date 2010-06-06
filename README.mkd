@@ -1,3 +1,60 @@
-## README
+### README ###
 
+Fortunella とは Push 型 IRC BOT フレームワークです。
+tiarra 等と組み合わせて使用してください。
+
+# 使用方法
+config.yaml に設定を記述する事により, Plugin の使用を制限する事ができます。
+
+----
+general:  
+  host: localhost      #IRCサーバーHOST
+  port: 6666           #IRCサーバーPORT
+  user: hogeuser       #IRC USER
+  nick: hogenick       #IRC NICK
+  real: hogereal       #IRC REAL
+  pass: hogepass       #IRC PASS
+  error: #hogechannle  #ERORR 出力チャンネル
+  pulubin_dir: plugins #Plugin Directory
+  data_dir: data       #Data Directory
+  charset:
+    default: utf-8     #message 文字コード
+
+plugins:
+  Sample:                       #Plugin Class Name
+    channels:                   #有効チャンネル(未入力時は全チャンネルで有効
+      - "#hogehoge@freenode"
+    crawl: 10                   #実行間隔(秒)
+
+
+----
+
+
+#Plugin HELP
+プラグインについて
+
+AmebaNow:           #Ameba Nowの投稿を取得します
+  user:             #取得したいUserのアメーバID
+    - "hogehoge"
+  channels:
+  crowl: 30 
+
+Feed:               #新着Feedを取得します
+  URI:
+    - "http://exsample.com/feed.rss" #Feed URL
+  channels:
+  crowl: 30
+
+Gmail:              #Gmail より新着メールを取得します
+  account: "hoge"   #Gmail User
+  password: "fuga"  #Gmail Password
+  channels:
+  crowl: 30
+
+Times:              #定時に発言するタイマーです
+  timer:
+    - time: "10:00" #時刻
+      channels:
+      reply: "hogehoge" #定時発言
+  crowl: 60
 
